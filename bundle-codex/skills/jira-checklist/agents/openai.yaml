@@ -1,0 +1,4 @@
+interface:
+  display_name: "Jira Checklist"
+  short_description: "Generate issue checklists from Jira tickets"
+  default_prompt: "Generate an implementation, QA, or release checklist from this Jira issue and keep it ready for review before posting back."

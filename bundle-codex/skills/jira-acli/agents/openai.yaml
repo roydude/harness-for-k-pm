@@ -1,0 +1,4 @@
+interface:
+  display_name: "Jira ACLI"
+  short_description: "Manage Jira Cloud work items with Atlassian CLI"
+  default_prompt: "Use Atlassian CLI to search, view, create, edit, transition, or comment on Jira work items with preview-before-write safety."
