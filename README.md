@@ -2,115 +2,83 @@
 
 Korean version: [README.ko.md](README.ko.md)
 
-K-PM Agent Harness
+A planner-oriented bundle for product managers who use Codex or Claude Code and want to set up agent workflows quickly.
 
-Product managers in Korea often work with a broader scope than their counterparts in many other markets.
+This repository packages a practical default for PM work:
 
-Beyond owning business strategy and organizational KPIs, they are often expected to write planning documents, analyze data, design screens, communicate with clients, manage schedules, handle QA, report bugs, support operational customer service, and sometimes even step into marketing.
+- PM-first routing rules
+- explicit delegation policy
+- clear separation between planning, design, implementation, review, and QA
+- reusable skills for specs, research, synthesis, docs, slides, Figma, Jira, and browser tasks
 
-This repository is built for those K-PMs. It provides an agent harness that product managers across very different environments, from startups to large enterprises, can adopt based on their actual workflows and needs.
+This is not an installer framework. It is the bundle payload itself.
 
-The goal is simple: reduce repetitive operational load so PMs can spend more time on higher-value judgment, coordination, and problem-solving.
+## What's Inside
 
-At the moment, this repository serves as a public installer bundle for non-system Codex skills.
+### `bundle-codex/`
 
-This repository keeps a single manifest for reusable Codex skills and installs them into `${CODEX_HOME:-$HOME/.codex}/skills` for both Codex CLI and Codex App. Upstream skills stay in their original GitHub repositories and are pinned by commit SHA. Local-only skills are vendored under `vendor/skills/`.
+- `AGENTS.md`
+- `agents/*.toml` for 16 roles
+- `skills/*` for 26 reusable skills
 
-## Repository Layout
+### `bundle-claude/`
 
-- `manifest/skills.yaml`: source-of-truth for installable skills
-- `scripts/install_codex_skills.py`: installer with dry-run, category, and single-skill modes
-- `scripts/check_updates.py`: upstream update checker for pinned GitHub refs
-- `vendor/skills/`: vendored local-only skills
-- `NOTICE.md`: upstream source and licensing notes
+- `CLAUDE.md`
+- `agents/*.md` for 16 roles
+- `skills/*` for 27 reusable skills
+- includes `refresh-planning-subagents` for Claude-side cleanup
 
-## Quick Start
+Notable roles:
+`product-manager`, `business-analyst`, `project-manager`, `ui-designer`, `api-designer`, `architect-reviewer`, `frontend-developer`, `backend-developer`, `code-reviewer`, `qa-expert`
 
-macOS and Linux use the same commands.
+Notable skills:
+`create-prd`, `user-stories`, `summarize-meeting`, `summarize-interview`, `analyze-feature-requests`, `brainstorm-ideas-existing`, `jira-checklist`, `korean-humanizer`, `slides`, `figma`, `openai-docs`
 
-```bash
-git clone <your-public-repo-url> harness-for-k-pm
-cd harness-for-k-pm
-python3 scripts/install_codex_skills.py --all
-```
+## Quick Install
 
-Install into a custom Codex home:
-
-```bash
-CODEX_HOME=/tmp/codex-home python3 scripts/install_codex_skills.py --all
-```
-
-Preview the plan without changing anything:
+Codex CLI / Codex App:
 
 ```bash
-python3 scripts/install_codex_skills.py --all --dry-run
+mkdir -p ~/.codex
+rsync -a bundle-codex/ ~/.codex/
 ```
 
-Install only one category:
+Claude Code:
 
 ```bash
-python3 scripts/install_codex_skills.py --category "PM 전략"
+mkdir -p ~/.claude/agents
+mkdir -p ~/.claude/plugins/marketplaces/ai-harness/skills
+cp bundle-claude/CLAUDE.md ~/.claude/CLAUDE.md
+rsync -a bundle-claude/agents/ ~/.claude/agents/
+rsync -a bundle-claude/skills/ ~/.claude/plugins/marketplaces/ai-harness/skills/
 ```
 
-Install only one skill:
+If you already have `~/.codex/AGENTS.md` or `~/.claude/CLAUDE.md`, merge carefully instead of blindly overwriting. If you only want part of the bundle, copy only the agents or skills you need.
 
-```bash
-python3 scripts/install_codex_skills.py --skill korean-humanizer
-```
+## Default Operating Model
 
-Force reinstall existing skills:
+- Do not spawn subagents by default.
+- Use delegation only when the user explicitly asks for it.
+- Prefer the smallest competent agent set.
+- Keep planning, design, implementation, review, and QA logically separated.
+- Avoid broad refactors unless explicitly requested.
 
-```bash
-python3 scripts/install_codex_skills.py --all --force
-```
+## Customize
 
-## Categories
+- Edit the global routing rules in `bundle-codex/AGENTS.md` or `bundle-claude/CLAUDE.md`.
+- Adjust individual agent behavior under `bundle-*/agents/`.
+- Add or remove skills under `bundle-*/skills/`.
+- Keep the Codex and Claude variants aligned if you want similar behavior across both runtimes.
 
-The manifest categories are aligned so they can later be reused in `AGENTS.md`.
+## Who This Is For
 
-- `기본 생산성 / 문서 / 디자인`
-- `PM 데이터 분석`
-- `PM 제품 탐색`
-- `PM 전략`
-- `PM 실행 / 기획 운영`
-- `시장 조사 / GTM / 성장`
-- `실무 툴킷 / 문서 보조`
+This bundle is aimed at planners and product managers who use agents for:
 
-## Update Workflow
+- PRDs and specs
+- discovery and idea generation
+- interview and meeting synthesis
+- Jira and execution support
+- design review and Figma handoff
+- document, slide, and browser-assisted work
 
-Check whether upstream default branches moved ahead of the pinned SHAs:
-
-```bash
-python3 scripts/check_updates.py
-```
-
-Recommended maintenance flow:
-
-1. Run `python3 scripts/check_updates.py`.
-2. Review the upstream changes you actually want.
-3. Update `manifest/skills.yaml` refs from old SHA to new SHA.
-4. Re-run a test install into a temporary `CODEX_HOME`.
-5. Commit the manifest change.
-
-The installer does not auto-merge upstream updates. The manifest remains the explicit review point.
-
-## Manifest Schema
-
-Each entry in `manifest/skills.yaml` uses these fields:
-
-- `name`: manifest identifier
-- `category`: human-facing grouping
-- `source_type`: `github_path` or `vendored`
-- `repo`: `owner/repo` for upstream GitHub skills
-- `ref`: pinned commit SHA
-- `path`: repo-relative skill path or vendored path
-- `dest_name`: destination folder under `~/.codex/skills`
-- `license`: SPDX-ish label or `see upstream`
-- `notes`: optional installation note
-
-## Installation Notes
-
-- `.system` skills are intentionally excluded.
-- The installer skips existing skill directories by default.
-- If Codex's built-in `install-skill-from-github.py` exists, the installer reuses it when practical.
-- If that helper is not available, the installer falls back to a native zip-download implementation using Python standard library only.
+Treat this as a strong starting point, not a universal standard. The intended workflow is to install it fast, then trim and adapt it to the way your team actually works.
