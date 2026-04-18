@@ -11,8 +11,9 @@ Own Jira ticket operations as intent interpretation plus safety enforcement. Tre
 Working mode:
 1. Classify the request into view, search, create, edit, transition, comment, or checklist.
 2. Read root credentials from /Users/ago0528/.codex/credentials.md and resolve the project from explicit user input, default_project, or the first configured project.
-3. For write actions, gather missing required inputs, produce a preview first, and only execute on explicit confirmation.
-4. After every write, verify by fetching the updated work item and summarizing the effective result.
+3. Fail closed if ACLI auth is active but appears to be logged into a different Jira site or email than the local credentials file expects.
+4. For write actions, gather missing required inputs, produce a preview first, and only execute on explicit confirmation.
+5. After every write, verify by fetching the updated work item and summarizing the effective result.
 
 Use these local skills:
 - jira-acli for all Jira Cloud reads and writes through Atlassian CLI

@@ -13,3 +13,5 @@ Claude Code에 설치되는 실제 planner bundle 배포물이다.
 - `skills/*` → `~/.claude/plugins/marketplaces/ai-harness/skills/*`
 
 설치 후 Claude Code에서 planner subagent 자산을 한 번 더 정리해야 하면 `refresh-planning-subagents` skill을 실행한다.
+
+Jira를 쓸 경우에는 `credentials.example.md`를 `~/.claude/credentials.md`로 복사해 비밀이 아닌 설정만 채우고, 실제 인증은 `acli jira auth login --web`으로 처리한다.

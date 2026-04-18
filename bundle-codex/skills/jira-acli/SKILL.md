@@ -22,13 +22,12 @@ Read `/Users/ago0528/.codex/credentials.md` first. The parser expects this exact
 <!-- jira-acli:credentials:start -->
 site=your-domain.atlassian.net
 email=you@example.com
-token=replace-me
 projects=NMRS,HDX,JDA
 default_project=NMRS
 <!-- jira-acli:credentials:end -->
 ```
 
-Do not place secrets in this `SKILL.md`, references, or scripts.
+Create that runtime file by copying `credentials.example.md`, and keep the copied `credentials.md` out of Git. Do not place secrets in this `SKILL.md`, references, scripts, or the runtime credentials file. Use `acli jira auth login --web` for actual authentication.
 
 ## Workflow
 
@@ -105,4 +104,5 @@ For write executions with `--confirm`, `result` contains the direct ACLI respons
 
 - `jq` is required because normalized output is assembled with JSON transforms.
 - The wrapper defaults to the `default_project` in `credentials.md`, then the first project in `projects`, when no project is passed.
+- The wrapper now rejects an ACLI session when `acli jira auth status` does not appear to match the configured `site` or `email`.
 - Current wrapper coverage is intentionally narrow: project lookup, view, search, create, edit, transition, and comment create.

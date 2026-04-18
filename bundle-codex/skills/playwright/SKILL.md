@@ -25,11 +25,12 @@ node --version
 npm --version
 
 # If missing, install Node.js/npm, then:
-npm install -g @playwright/cli@latest
+npm install -g @playwright/cli@0.1.8
 playwright-cli --help
 ```
 
 Once `npx` is present, proceed with the wrapper script. A global install of `playwright-cli` is optional.
+The bundled wrapper pins `@playwright/cli` to `0.1.8` by default. Override it only intentionally with `PLAYWRIGHT_CLI_VERSION`.
 
 ## Skill path (set once)
 
@@ -56,7 +57,7 @@ Use the wrapper script:
 If the user prefers a global install, this is also valid:
 
 ```bash
-npm install -g @playwright/cli@latest
+npm install -g @playwright/cli@0.1.8
 playwright-cli --help
 ```
 

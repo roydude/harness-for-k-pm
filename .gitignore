@@ -3,4 +3,7 @@ __pycache__/
 *.pyc
 *.pyo
 *.swp
-
+bundle-codex/credentials.md
+bundle-claude/credentials.md
+bundle-codex/cache/jira/
+bundle-claude/cache/jira/

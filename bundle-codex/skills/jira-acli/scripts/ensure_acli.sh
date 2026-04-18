@@ -3,6 +3,7 @@ set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.." && pwd)"
 DEFAULT_CREDENTIALS_FILE="${ROOT_DIR}/credentials.md"
+AUTH_STATUS_OUTPUT=""
 
 trim() {
   local value="${1:-}"
@@ -113,13 +114,46 @@ check_acli_available() {
 }
 
 check_auth_status() {
-  acli jira auth status >/dev/null 2>&1
+  AUTH_STATUS_OUTPUT="$(acli jira auth status 2>&1)" || return 1
+  return 0
+}
+
+auth_matches_credentials() {
+  local output="${1:-}"
+  local expected_site expected_email output_lc
+
+  if [[ "${JIRA_ACLI_SKIP_CONTEXT_CHECK:-0}" == "1" ]]; then
+    return 0
+  fi
+
+  expected_site="$(normalize_site "${JIRA_ACLI_SITE:-}")"
+  expected_email="$(trim "${JIRA_ACLI_EMAIL:-}")"
+
+  if [[ -z "$expected_site" && -z "$expected_email" ]]; then
+    return 0
+  fi
+
+  if [[ -z "$output" ]]; then
+    return 1
+  fi
+
+  output_lc="$(printf '%s' "$output" | tr '[:upper:]' '[:lower:]')"
+
+  if [[ -n "$expected_site" ]]; then
+    printf '%s' "$output_lc" | grep -F -- "$(printf '%s' "$expected_site" | tr '[:upper:]' '[:lower:]')" >/dev/null || return 1
+  fi
+
+  if [[ -n "$expected_email" ]]; then
+    printf '%s' "$output_lc" | grep -F -- "$(printf '%s' "$expected_email" | tr '[:upper:]' '[:lower:]')" >/dev/null || return 1
+  fi
+
+  return 0
 }
 
 login_hint() {
   cat <<EOF
+cp "${ROOT_DIR}/credentials.example.md" "${ROOT_DIR}/credentials.md"
 acli jira auth login --web
-echo "<token>" | acli jira auth login --site "${JIRA_ACLI_SITE:-your-domain.atlassian.net}" --email "${JIRA_ACLI_EMAIL:-you@example.com}" --token
 EOF
 }
 
@@ -129,6 +163,7 @@ status_json() {
   local acli_ok="$3"
   local jq_ok="$4"
   local auth_ok="$5"
+  local auth_context_ok="$6"
   local first_project_value
 
   first_project_value="$(first_project "${JIRA_ACLI_PROJECTS:-}")"
@@ -145,9 +180,10 @@ status_json() {
     --argjson acli_ok "$acli_ok" \
     --argjson jq_ok "$jq_ok" \
     --argjson auth_ok "$auth_ok" \
+    --argjson auth_context_ok "$auth_context_ok" \
     --arg login_hint "$(login_hint)" \
     '{
-      ok: ($credentials_ok and $acli_ok and $jq_ok and $auth_ok),
+      ok: ($credentials_ok and $acli_ok and $jq_ok and $auth_ok and $auth_context_ok),
       root_dir: $root_dir,
       credentials_file: $credentials_file,
       credentials: {
@@ -164,6 +200,7 @@ status_json() {
       },
       auth: {
         ok: $auth_ok,
+        context_ok: $auth_context_ok,
         login_hint: $login_hint
       }
     }'
@@ -174,10 +211,10 @@ usage() {
 Usage: $(basename "$0") [--credentials FILE] [--json]
 
 Checks:
-- credentials marker block in credentials.md
+- credentials marker block in credentials.md copied from credentials.example.md
 - jq availability
 - acli availability
-- jira auth status
+- jira auth status and context match
 EOF
 }
 
@@ -188,6 +225,7 @@ main() {
   local acli_ok=false
   local jq_ok=false
   local auth_ok=false
+  local auth_context_ok=false
 
   while [[ $# -gt 0 ]]; do
     case "$1" in
@@ -225,10 +263,13 @@ main() {
 
   if [[ "$acli_ok" == true ]] && check_auth_status; then
     auth_ok=true
+    if auth_matches_credentials "$AUTH_STATUS_OUTPUT"; then
+      auth_context_ok=true
+    fi
   fi
 
   if [[ "$json_mode" -eq 1 ]]; then
-    status_json "$credentials_file" "$credentials_ok" "$acli_ok" "$jq_ok" "$auth_ok"
+    status_json "$credentials_file" "$credentials_ok" "$acli_ok" "$jq_ok" "$auth_ok" "$auth_context_ok"
     exit 0
   fi
 
@@ -242,8 +283,9 @@ main() {
   printf 'jq_ok=%s\n' "$jq_ok"
   printf 'acli_ok=%s\n' "$acli_ok"
   printf 'auth_ok=%s\n' "$auth_ok"
+  printf 'auth_context_ok=%s\n' "$auth_context_ok"
 
-  if [[ "$auth_ok" != true ]]; then
+  if [[ "$auth_ok" != true || "$auth_context_ok" != true ]]; then
     printf '\nLogin hints:\n%s\n' "$(login_hint)"
   fi
 }

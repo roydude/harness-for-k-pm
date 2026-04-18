@@ -10,21 +10,23 @@ Jira 이슈의 요구사항과 실제 코드 변경사항을 분석하여 QA 검
 
 ## 인증 정보
 
-- **Base URL**: `https://midasitweb-jira.atlassian.net`
-- **User/Token**: `~/.claude/credentials.md`의 **Atlassian** 섹션 참조
-- **인증 방식**: Basic Auth (`-u user:token`)
+- **Base URL**: `https://your-domain.atlassian.net`
+- **런타임 설정**: `~/.claude/credentials.md` 같은 Git 비추적 로컬 파일에 비밀이 아닌 설정만 둔다
+- **실제 인증**: `acli jira auth login --web` 또는 OS 비밀 저장소를 우선 사용한다
+- **주의**: 토큰을 명령행 예시에 직접 넣지 않는다
 
 ## 절차
 
 1. 인자로 Jira 이슈 키(예: `NMRS-15863`)를 받는다
 2. **Jira 이슈 분석**: curl로 이슈를 조회한다
    ```bash
-   curl -s "https://midasitweb-jira.atlassian.net/rest/api/3/issue/{issueKey}" \
-     -u "{user}:{token}" | jq '{summary:.fields.summary, description:.fields.description, status:.fields.status.name}'
+   curl -s --netrc-file "$HOME/.jira-netrc" \
+     "https://your-domain.atlassian.net/rest/api/3/issue/{issueKey}" \
+     | jq '{summary:.fields.summary, description:.fields.description, status:.fields.status.name}'
    ```
 3. **Figma 디자인 확인** (선택):
    - description에 Figma 링크가 있으면 curl로 Figma API를 호출하여 디자인 스펙을 가져온다
-   - URL에서 fileKey, nodeId 추출 후: `curl -s "https://api.figma.com/v1/files/{fileKey}/nodes?ids={nodeId}" -H "X-Figma-Token: {token}"`
+   - URL에서 fileKey, nodeId 추출 후: `curl -s "https://api.figma.com/v1/files/{fileKey}/nodes?ids={nodeId}" -H "X-Figma-Token: $FIGMA_OAUTH_TOKEN"`
    - 기획 내용(UI 구성, 정책, 플로우)을 체크리스트에 반영한다
 4. **코드 변경사항 분석** (선택):
    - 이슈 키로 관련 브랜치를 찾아 git diff를 분석한다
@@ -55,8 +57,8 @@ Jira 이슈의 요구사항과 실제 코드 변경사항을 분석하여 QA 검
    ```
 7. curl로 `customfield_10384` 필드에 체크리스트를 등록한다:
    ```bash
-   curl -s -X PUT "https://midasitweb-jira.atlassian.net/rest/api/3/issue/{issueKey}" \
-     -u "{user}:{token}" \
+   curl -s --netrc-file "$HOME/.jira-netrc" -X PUT \
+     "https://your-domain.atlassian.net/rest/api/3/issue/{issueKey}" \
      -H "Content-Type: application/json" \
      -d '{"fields":{"customfield_10384":"--- 카테고리\n* [ ] 항목1\n* [ ] 항목2"}}'
    ```

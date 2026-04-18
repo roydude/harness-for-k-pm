@@ -41,6 +41,7 @@ Codex CLI / Codex App:
 ```bash
 mkdir -p ~/.codex
 rsync -a bundle-codex/ ~/.codex/
+cp ~/.codex/credentials.example.md ~/.codex/credentials.md
 ```
 
 Claude Code:
@@ -49,9 +50,13 @@ Claude Code:
 mkdir -p ~/.claude/agents
 mkdir -p ~/.claude/plugins/marketplaces/ai-harness/skills
 cp bundle-claude/CLAUDE.md ~/.claude/CLAUDE.md
+cp bundle-claude/credentials.example.md ~/.claude/credentials.example.md
+cp ~/.claude/credentials.example.md ~/.claude/credentials.md
 rsync -a bundle-claude/agents/ ~/.claude/agents/
 rsync -a bundle-claude/skills/ ~/.claude/plugins/marketplaces/ai-harness/skills/
 ```
+
+After copying the template, fill in only non-secret values such as `site`, `email`, `projects`, and `default_project`, then authenticate with `acli jira auth login --web`. Keep the runtime `credentials.md` file out of Git.
 
 If you already have `~/.codex/AGENTS.md` or `~/.claude/CLAUDE.md`, merge carefully instead of blindly overwriting. If you only want part of the bundle, copy only the agents or skills you need.
 

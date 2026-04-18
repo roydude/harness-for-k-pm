@@ -10,6 +10,8 @@ This skill does not hardcode per-project JSON files such as `NMRS.json`.
 
 If none of these exist, stop and ask for the project key.
 
+The runtime `credentials.md` should be created from `credentials.example.md` and kept out of Git.
+
 ## Minimum required fields
 
 ### Create

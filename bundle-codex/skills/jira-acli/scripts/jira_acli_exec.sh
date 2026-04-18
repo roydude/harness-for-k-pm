@@ -66,7 +66,7 @@ ensure_ready() {
         ok: false,
         action: $action,
         error: "credentials_unavailable",
-        message: "credentials.md is missing or does not contain the jira-acli marker block.",
+        message: "credentials.md is missing or does not contain the jira-acli marker block. Copy credentials.example.md first.",
         credentials_file: $credentials_file
       }'
     return 1
@@ -105,6 +105,28 @@ ensure_ready() {
         action: $action,
         error: "jira_auth_missing",
         message: "Jira authentication is not ready.",
+        login_hint: $login_hint
+      }'
+    return 1
+  fi
+
+  if ! auth_matches_credentials "${AUTH_STATUS_OUTPUT:-}"; then
+    jq -n \
+      --arg action "$ACTION" \
+      --arg expected_site "${JIRA_ACLI_SITE:-}" \
+      --arg expected_email "${JIRA_ACLI_EMAIL:-}" \
+      --arg auth_status "${AUTH_STATUS_OUTPUT:-}" \
+      --arg login_hint "$(login_hint)" \
+      '{
+        ok: false,
+        action: $action,
+        error: "jira_auth_mismatch",
+        message: "Jira authentication is active, but the logged-in tenant or user does not match credentials.md.",
+        expected: {
+          site: (if $expected_site == "" then null else $expected_site end),
+          email: (if $expected_email == "" then null else $expected_email end)
+        },
+        auth_status: (if $auth_status == "" then null else $auth_status end),
         login_hint: $login_hint
       }'
     return 1

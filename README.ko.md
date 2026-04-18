@@ -41,6 +41,7 @@ Codex CLI / Codex App:
 ```bash
 mkdir -p ~/.codex
 rsync -a bundle-codex/ ~/.codex/
+cp ~/.codex/credentials.example.md ~/.codex/credentials.md
 ```
 
 Claude Code:
@@ -49,9 +50,13 @@ Claude Code:
 mkdir -p ~/.claude/agents
 mkdir -p ~/.claude/plugins/marketplaces/ai-harness/skills
 cp bundle-claude/CLAUDE.md ~/.claude/CLAUDE.md
+cp bundle-claude/credentials.example.md ~/.claude/credentials.example.md
+cp ~/.claude/credentials.example.md ~/.claude/credentials.md
 rsync -a bundle-claude/agents/ ~/.claude/agents/
 rsync -a bundle-claude/skills/ ~/.claude/plugins/marketplaces/ai-harness/skills/
 ```
+
+템플릿을 복사한 뒤에는 `site`, `email`, `projects`, `default_project` 같은 비밀이 아닌 값만 채우고, 실제 인증은 `acli jira auth login --web`으로 처리하는 편이 안전합니다. 런타임용 `credentials.md`는 Git에 올리지 마세요.
 
 이미 `~/.codex/AGENTS.md`나 `~/.claude/CLAUDE.md`를 쓰고 있다면, 그대로 덮어쓰기보다 수동으로 병합하는 편이 안전합니다. 번들의 일부만 쓰고 싶다면 필요한 agent나 skill만 골라서 복사하면 됩니다.
 

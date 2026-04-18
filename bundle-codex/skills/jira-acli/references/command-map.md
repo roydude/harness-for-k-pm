@@ -26,7 +26,8 @@ Confirmed against Atlassian ACLI reference pages current to April 1, 2026.
 | Intent | ACLI command |
 | --- | --- |
 | Browser login | `acli jira auth login --web` |
-| Token login | `echo "$TOKEN" \| acli jira auth login --site "your-domain.atlassian.net" --email "you@example.com" --token` |
+
+Use browser login by default. Do not publish raw token-on-command-line examples in repo docs.
 
 ## Agent-side usage rule
 
